@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 import os
 
@@ -22,6 +22,23 @@ class Post(db.Model):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/create", methods=["GET", "POST"])
+def create():
+    if request.method == "POST":
+        title = request.form["title"]
+        content = request.form["content"]
+        try:  
+            post = Post(title=title, content=content)
+            db.session.add(post)
+            db.session.commit()
+            return redirect("/")
+        except: 
+            return "There was an issue adding your record"
+    else:
+        return render_template("create.html")
+        
+
 
 @app.route("/about")
 def about():

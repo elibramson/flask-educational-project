@@ -19,9 +19,15 @@ class Post(db.Model):
     def __repr__(self):
         return f"<Post {self.title}>"
 
+@app.route("/index")
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/posts")
+def posts():
+    posts = Post.query.order_by(Post.id.desc()).all()
+    return render_template("posts.html", posts=posts)
 
 @app.route("/create", methods=["GET", "POST"])
 def create():

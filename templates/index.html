@@ -1,11 +1,94 @@
 {% extends "base.html" %}
 
 {% block title %}
-Main page
+Home - Flask Learning Adventure
 {% endblock %}
 
 {% block content %}
-<h1>Welcome to Flask Learning Adventure!</h1>
-<p>This is an educational project where I'm exploring Flask functionality.</p>
-<p>Check out the <a href="{{ url_for('posts') }}">Posts</a> page to see the blog posts.</p>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h1 class="h2 mb-0">Welcome to Flask Learning Adventure!</h1>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        This is an educational project where I'm exploring Flask functionality, 
+                        building a complete blog system with modern UI/UX design.
+                    </p>
+                    <p>
+                        Features include template inheritance, SQLAlchemy integration, 
+                        CRUD operations, responsive design, and Docker containerization.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('posts') }}" class="btn btn-primary">
+                            <i class="fas fa-blog"></i> View All Posts
+                        </a>
+                        <a href="{{ url_for('create') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i> Create Post
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-secondary text-white">
+                    <h3 class="h5 mb-0">Quick Stats</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ recent_posts|length }}</h4>
+                            <small class="text-muted">Recent Posts</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">100%</h4>
+                            <small class="text-muted">Flask Learning</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if recent_posts %}
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="h3 mb-4">Recent Posts</h2>
+            <div class="row">
+                {% for post in recent_posts %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100 shadow-sm post-card">
+                        <div class="card-header bg-gradient-primary text-white">
+                            <h5 class="card-title mb-0">{{ post.title }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                {{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}
+                            </p>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%B %d, %Y') }}
+                            </small>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{{ url_for('post_detail', post_id=post.id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye"></i> Read More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('posts') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-right"></i> View All Posts
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

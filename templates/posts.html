@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}
+Posts
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">Blog Posts</h1>
+                <a href="{{ url_for('create') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Post
+                </a>
+            </div>
+
+            {% if posts.items %}
+                <div class="row">
+                    {% for post in posts.items %}
+                    <div class="col-lg-6 col-xl-4 mb-4">
+                        <div class="card h-100 shadow-sm post-card">
+                            <div class="card-header bg-gradient-primary text-white">
+                                <h5 class="card-title mb-0">{{ post.title }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">
+                                    {{ post.content[:150] }}{% if post.content|length > 150 %}...{% endif %}
+                                </p>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%B %d, %Y') }}
+                                </small>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <a href="{{ url_for('post_detail', post_id=post.id) }}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i> Read More
+                                    </a>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url_for('edit_post', post_id=post.id) }}" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger btn-sm delete-btn" 
+                                                data-post-id="{{ post.id }}" data-post-title="{{ post.title }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                {% if posts.pages > 1 %}
+                <nav aria-label="Posts pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if posts.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('posts', page=posts.prev_num) }}">Previous</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in posts.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != posts.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('posts', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if posts.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('posts', page=posts.next_num) }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h3 class="text-muted">No posts yet!</h3>
+                            <p class="text-muted mb-4">Create your first post to get started.</p>
+                            <a href="{{ url_for('create') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create Post
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete "<span id="postTitle"></span>"? This action cannot be undone.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.getAttribute('data-post-id');
+            const postTitle = this.getAttribute('data-post-title');
+            deletePost(postId, postTitle);
+        });
+    });
+});
+
+function deletePost(postId, postTitle) {
+    if (confirm(`Are you sure you want to delete "${postTitle}"? This action cannot be undone.`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/delete/${postId}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function confirmDelete(postId, postTitle) {
+    // Set the post title in the modal
+    const titleSpan = document.getElementById('postTitle');
+    if (titleSpan) {
+        titleSpan.textContent = postTitle;
+    }
+    
+    // Set the form action
+    const deleteForm = document.getElementById('deleteForm');
+    if (deleteForm) {
+        deleteForm.action = `/delete/${postId}`;
+    }
+    
+    // Show the modal
+    const deleteModal = document.getElementById('deleteModal');
+    if (deleteModal) {
+        const modal = new bootstrap.Modal(deleteModal);
+        modal.show();
+    } else {
+        // Fallback if modal doesn't exist
+        deletePost(postId, postTitle);
+    }
+}
+</script>
+{% endblock %}

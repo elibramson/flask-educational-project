@@ -1,0 +1,54 @@
+# Git files
+.git
+.gitignore
+
+# Python cache files
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environment
+.venv
+venv
+env
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database files (will be created in container)
+instance/
+
+# Docker files
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Documentation
+README.md
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp 

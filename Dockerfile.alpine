@@ -1,0 +1,40 @@
+# Alternative Dockerfile using Alpine Linux
+# Alpine is more lightweight and typically has fewer package issues
+FROM python:3.11-alpine
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    FLASK_APP=app.py \
+    FLASK_ENV=production
+
+# Install system dependencies using Alpine package manager
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    libffi-dev \
+    curl
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Create instance directory and set proper permissions
+RUN mkdir -p /app/instance && \
+    chmod 755 /app/instance
+
+# Create non-root user (Alpine uses different user management)
+RUN addgroup -g 1000 appuser && \
+    adduser -D -s /bin/sh -u 1000 -G appuser appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+EXPOSE 5000
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:5000/ || exit 1
+
+CMD ["python", "app.py"] 
